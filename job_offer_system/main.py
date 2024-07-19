@@ -3,28 +3,28 @@ Job Offer System
 """
 from enum import Enum
 
-class JobError(Exception):
+class JobAndUserError(Exception):
     """Base class for exceptions in this module."""
 
-class FullNameError(JobError):
+class FullNameError(JobAndUserError):
     """Exception raised for invalid names."""
     def __init__(self, message="Invalid name"):
         self.message = message
         super().__init__(self.message)
 
-class AgeError(JobError):
+class AgeError(JobAndUserError):
     """Exception raised for invalid age."""
     def __init__(self, message="Invalid age"):
         self.message = message
         super().__init__(self.message)
 
-class TimeConditionError(JobError):
+class TimeConditionError(JobAndUserError):
     """Exception raised for invalid time conditions."""
     def __init__(self, message="Invalid time condition"):
         self.message = message
         super().__init__(self.message)
 
-class SalaryError(JobError):
+class SalaryError(JobAndUserError):
     """Exception raised for invalid salary."""
     def __init__(self, message="Invalid salary"):
         self.message = message
@@ -39,14 +39,15 @@ class TimeCondition(Enum):
 class Job:
     """Job Class"""
     _id_counter = 1
+    jobs = []
 
     def __init__(self) -> None:
         self.id = Job._id_counter
         Job._id_counter += 1
         self._skills = []
         self._name = ''
-        self._min_age = 18
-        self._max_age = 60
+        self._min_age = 0
+        self._max_age = 200
         self._time_condition = TimeCondition.FULLTIME  # Default time condition
         self._salary = 1000
 
@@ -160,15 +161,16 @@ class Job:
 class User:
     """User Class"""
     _id_counter = 1
+    users = []
 
     def __init__(self) -> None:
         self.id = User._id_counter
         User._id_counter += 1
         self._skills = []
-        self._name = ''  # Initialize _name directly
-        self._age = 0  # Initialize _age directly
-        self._time_condition = 'FULLTIME'  # Initialize _time_condition directly
-        self._salary = 1000  # Initialize _salary directly
+        self._name = ''
+        self._age = 0
+        self._time_condition = 'FULLTIME'
+        self._salary = 1000
 
     # Properties
 
@@ -261,3 +263,48 @@ class User:
         if salary < 0 or salary >= 1_000_000_000 or salary % 1000 != 0:
             return False
         return True
+
+g_skills = []
+
+def add_job_skill(iid, skill):
+    """adding a skill to a job"""
+    for s in g_skills:
+        if s != skill:
+            # invalid skill
+            pass
+        else:
+            break
+    for j in Job.jobs:
+        if j.id == iid:
+            for s in j.skills:
+                if s == skill:
+                    # repeated skill
+                    pass
+                else:
+                    j.skills(skill) # skill added
+                    break
+        else:
+            # invalid id
+            pass
+
+
+def add_user_skill(iid, skill):
+    """adding a skill to a user"""
+    for s in g_skills:
+        if s != skill:
+            # invalid skill
+            pass
+        else:
+            break
+    for u in User.users:
+        if u.id == iid:
+            for s in u.skills:
+                if s == skill:
+                    # repeated skill
+                    pass
+                else:
+                    u.skills(skill) # skill added
+                    break
+        else:
+            # invalid id
+            pass
