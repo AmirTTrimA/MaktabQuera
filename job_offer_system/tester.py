@@ -38,8 +38,8 @@ def test_user_class():
         print(AgeError())
 
     # Test setting valid time condition
-    user.time_condition = 'part'
-    assert user.time_condition == 'part'
+    user.time_condition = 'PARTTIME'
+    assert user.time_condition == 'PARTTIME'
 
     # Test setting invalid time condition (should raise TimeConditionError)
     try:
