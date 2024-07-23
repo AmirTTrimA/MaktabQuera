@@ -56,6 +56,8 @@ class Job:
         self._max_age = self.max_age = max_age
         self._time_condition = self.time_condition = time_condition
         self._salary = self.salary = salary
+        self.views = 0  # Track total views
+        self.skill_views = {}  # Track views per skill
 
     def __str__(self) -> str:
         return f'User {self.id}: Name: {self.name}, Min Age: {self.min_age}, Max Age: {self.max_age}, Time Condition: {self.time_condition}, Salary: {self.salary}'
@@ -73,6 +75,14 @@ class Job:
             raise TimeConditionError()
         if not self._check_salary(self.salary):
             raise SalaryError()
+
+    def increment_view(self, skill):
+        """Increment view count for the job and associated skill."""
+        self.views += 1
+        if skill in self.skill_views:
+            self.skill_views[skill] += 1
+        else:
+            self.skill_views[skill] = 1
 
     # Properties
 
@@ -193,6 +203,8 @@ class User:
         self._age = self.age = age
         self._time_condition = self.time_condition = time_condition
         self._salary = self.salary = salary
+        self.total_views = 0  # Track total job views
+        self.skill_views = {}  # Track views per skill
 
     def __str__(self) -> str:
         return f'User {self.id}: Name: {self.name}, Age: {self.age}, Time Condition: {self.time_condition}, Salary: {self.salary}'
@@ -210,6 +222,31 @@ class User:
             raise TimeConditionError()
         if not self._check_salary(self.salary):
             raise SalaryError()
+
+    def view_job(self, job_id, joblist):
+        """User views a job, incrementing its view count based on all of the user's skills."""
+        # print(f"Current jobs: {joblist}")  # Debug print
+        if job_id not in joblist:
+            print("invalid index")  # Job does not exist
+            return
+        job = joblist[job_id]
+
+        # Check if the user has any skills to use for viewing
+        # print(f"User Skills for {self.name}: {self._skills}")  # Debug print
+        if not self._skills:
+            print("invalid index")  # No skills to view the job
+            return
+
+        # Increment view count for each of the user's skills
+        for skill in self._skills:
+            job.increment_view(skill)  # Increment view using the user's skill
+            self.total_views += 1  # Increment total views for the user
+            if skill in self.skill_views:
+                self.skill_views[skill] += 1
+            else:
+                self.skill_views[skill] = 1
+
+        print("tracked")
 
     # Properties
 
@@ -303,7 +340,59 @@ class User:
             return False
         return True
 
-g_skills = ['codeing', 'hacking', 'talking']  # Fixed spelling
+def job_status(job_id, jobs):
+    """Display the status of a job."""
+    if job_id not in jobs:
+        print(f"invalid index")
+        return
+
+    job = jobs[job_id]
+    total_views = job.views
+    skill_views = job.skill_views
+
+    # Prepare a list of all skills with their view counts
+    all_skills = job._skills  # Assuming _skills holds all skills for the job
+    skill_views_output = []
+
+    for skill in all_skills:
+        count = skill_views.get(skill, 0)  # Default to 0 if skill has no views
+        skill_views_output.append(f"{skill},{count}")
+
+    # Prepare the final output
+    skills_output = ", ".join(skill_views_output)
+
+    if all_skills:
+        print(f"{job.name}-{total_views}-({skills_output})")
+    else:
+        print(f"{job.name}-{total_views}-")  # No skills, just show job name and total views
+
+def user_status(user_id, users):
+    """Display the status of a user."""
+    if user_id not in users:
+        print(f"invalid index")
+        return
+
+    user = users[user_id]
+    total_views = user.total_views
+    skill_views = user.skill_views
+
+    # Prepare a list of all skills with their view counts
+    all_skills = user._skills  # Assuming _skills holds all skills for the user
+    skill_views_output = []
+
+    for skill in all_skills:
+        count = skill_views.get(skill, 0)  # Default to 0 if skill has no views
+        skill_views_output.append(f"{skill},{count}")
+
+    # Prepare the final output
+    skills_output = ", ".join(skill_views_output)
+
+    if all_skills:
+        print(f"{user.name}-({skills_output})")
+    else:
+        print(f"{user.name}-")  # No skills, just show user name
+
+
 
 def add_job_skill(job_id, skill):
     # Check if job_id exists
@@ -373,8 +462,25 @@ for _ in range(n):
 
         elif command == "ADD-JOB-SKILL":
             add_job_skill(int(data[0]), data[1])  # Ensure ID is an integer
+
         elif command == "ADD-USER-SKILL":
             add_user_skill(int(data[0]), data[1])  # Ensure ID is an integer
+
+        elif command == "VIEW": # if a user doesn't have any skills and view a job, beacause of the no skill situation it will be a invalid index error
+            user_id = int(data[0])
+            job_id = int(data[1])
+            if user_id in users:
+                users[user_id].view_job(job_id, jobs)
+            else:
+                print("invalid index")
+
+        elif command == "JOB-STATUS":
+            job_id = int(data[0])
+            job_status(job_id, jobs)
+
+        elif command == "USER-STATUS":
+            user_id = int(data[0])
+            user_status(user_id, users)
 
     except JobAndUserError as e:
         print(e)  # Print the error message
