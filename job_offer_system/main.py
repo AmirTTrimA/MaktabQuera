@@ -234,30 +234,6 @@ class User:
         if not self._check_salary(self.salary):
             raise SalaryError()
 
-    # def view_job(self, job_id, joblist):
-    #     """User views a job, incrementing its view count even if the user has no skills."""
-    #     if job_id not in joblist:
-    #         print("invalid index")
-    #         return
-
-    #     job = joblist[job_id]
-
-    #     if not self._skills:
-    #         job.increment_view(None)
-    #     # self.total_views += 1
-
-    #     if self._skills:
-    #         print(self._skills)
-    #         for skill in self._skills:
-    #             # print(skill)
-    #             job.increment_view(skill)
-    #             if skill in self.skill_views:
-    #                 self.skill_views[skill] += 1
-    #             else:
-    #                 self.skill_views[skill] = 1
-
-        # print("tracked")
-
     def view_job(self, job_id, joblist):
         """User views a job, incrementing its view count even if the user has no skills."""
         if job_id not in joblist:
@@ -266,27 +242,21 @@ class User:
 
         job = joblist[job_id]
 
-        # if not self._skills:
-        #     job.increment_view(None)
-        #     # self.total_views += 1
-
-        # Track skill views
-        skill_viewed = False  # Flag to track if a skill match occurred
+        skill_viewed = False
         for skill in self._skills:
-            if skill in job._skills:  # Check if the job has the user's skill
-                job.increment_view(skill)  # Increment view count for the job with the skill
-                skill_viewed = True  # Mark that a skill view occurred
+            if skill in job._skills:
+                job.increment_view(skill)
+                skill_viewed = True
                 if skill in self.skill_views:
                     self.skill_views[skill] += 1
                 else:
                     self.skill_views[skill] = 1
 
-        # If no skill views occurred, ensure the skill view count remains zero
         if not skill_viewed:
             job.increment_view(None)
             for skill in self._skills:
                 if skill not in self.skill_views:
-                    self.skill_views[skill] = 0  # Explicitly set to zero if no views occurred
+                    self.skill_views[skill] = 0
 
         print("tracked")
 
@@ -558,6 +528,7 @@ for _ in range(n):
 
         elif command == "ADD-USER-SKILL":
             add_user_skill(int(data[0]), data[1])
+
         elif command == "VIEW":
             user_id = int(data[0])
             job_id = int(data[1])
