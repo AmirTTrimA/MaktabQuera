@@ -27,7 +27,7 @@ class AgeError(JobAndUserError):
 
 class TimeConditionError(JobAndUserError):
     """Exception raised for invalid time conditions."""
-    def __init__(self, message="Invalid timetype"):
+    def __init__(self, message="invalid timetype"):
         self.message = message
         super().__init__(self.message)
 
@@ -64,6 +64,7 @@ class Job:
         return (
                 f'User {self.id}: Name: {self.name},'
                 f'Min Age: {self.min_age}, Max Age: {self.max_age},'
+                f'Views: {self.views}'
                 f'Time Condition: {self.time_condition}, Salary: {self.salary}'
                 )
 
@@ -84,6 +85,7 @@ class Job:
     def increment_view(self, skill):
         """Increment view count for the job and associated skill."""
         self.views += 1
+        # print(self.name,self.views)
         if skill in self.skill_views:
             self.skill_views[skill] += 1
         else:
@@ -232,29 +234,64 @@ class User:
         if not self._check_salary(self.salary):
             raise SalaryError()
 
-    def view_job(self, job_id, joblist):
-        """User views a job, incrementing its view count based on all of the user's skills."""
-        if job_id not in joblist:
-            print("invalid index")  # Job does not exist
-            return
-        job = joblist[job_id]
+    # def view_job(self, job_id, joblist):
+    #     """User views a job, incrementing its view count even if the user has no skills."""
+    #     if job_id not in joblist:
+    #         print("invalid index")
+    #         return
 
-        if not self._skills:
+    #     job = joblist[job_id]
+
+    #     if not self._skills:
+    #         job.increment_view(None)
+    #     # self.total_views += 1
+
+    #     if self._skills:
+    #         print(self._skills)
+    #         for skill in self._skills:
+    #             # print(skill)
+    #             job.increment_view(skill)
+    #             if skill in self.skill_views:
+    #                 self.skill_views[skill] += 1
+    #             else:
+    #                 self.skill_views[skill] = 1
+
+        # print("tracked")
+
+    def view_job(self, job_id, joblist):
+        """User views a job, incrementing its view count even if the user has no skills."""
+        if job_id not in joblist:
             print("invalid index")
             return
 
+        job = joblist[job_id]
+
+        # if not self._skills:
+        #     job.increment_view(None)
+        #     # self.total_views += 1
+
+        # Track skill views
+        skill_viewed = False  # Flag to track if a skill match occurred
         for skill in self._skills:
-            job.increment_view(skill)
-            self.total_views += 1
-            if skill in self.skill_views:
-                self.skill_views[skill] += 1
-            else:
-                self.skill_views[skill] = 1
+            if skill in job._skills:  # Check if the job has the user's skill
+                job.increment_view(skill)  # Increment view count for the job with the skill
+                skill_viewed = True  # Mark that a skill view occurred
+                if skill in self.skill_views:
+                    self.skill_views[skill] += 1
+                else:
+                    self.skill_views[skill] = 1
+
+        # If no skill views occurred, ensure the skill view count remains zero
+        if not skill_viewed:
+            job.increment_view(None)
+            for skill in self._skills:
+                if skill not in self.skill_views:
+                    self.skill_views[skill] = 0  # Explicitly set to zero if no views occurred
 
         print("tracked")
 
     def score_system(self, user, job):
-        """the score system to determine the score of a user based on his attributes"""
+        """The score system to determine the score of a user based on his attributes"""
         score = 0
         def age_score():
             user_age = user.age
@@ -466,7 +503,7 @@ def add_job_skill(job_id, skill):
         raise JobAndUserError("invalid index")
 
     if skill not in global_skills_set:
-        raise JobAndUserError("Invalid skill")
+        raise JobAndUserError("invalid skill")
 
     job = jobs[job_id]
     if skill in job.skills:
@@ -481,7 +518,7 @@ def add_user_skill(user_id, skill):
         raise JobAndUserError("invalid index")
 
     if skill not in global_skills_set:
-        raise JobAndUserError("Invalid skill")
+        raise JobAndUserError("invalid skill")
 
     user = users[user_id]
     if skill in user.skills:
@@ -521,9 +558,6 @@ for _ in range(n):
 
         elif command == "ADD-USER-SKILL":
             add_user_skill(int(data[0]), data[1])
-
-        # if a user doesn't have any skills and view a job,
-        # beacause of the no skill situation it will be a invalid index error
         elif command == "VIEW":
             user_id = int(data[0])
             job_id = int(data[1])
